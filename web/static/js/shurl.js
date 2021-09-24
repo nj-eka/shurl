@@ -32,7 +32,7 @@ function renderResponse(data) {
 generateBtn.onclick = function() {
     const requestShurl = {
         targetUrl: targetUrl.value,
-        expiredIn: expiredIn.value
+        expiredInDays: expiredIn.value
     };
     postData('/', requestShurl)
         .then((data) => {
