@@ -24,7 +24,7 @@ var expiredAt = time.Now().AddDate(0,0,1)
 
 func appInit(){
 	ctx := context.Background()
-	tokenizer, err := hashid_tokenizer.NewHashidTokenizer(&config.TokenizerConfig{"ecafbaf0-1bcc-11ec-9621-0242ac130002", 5, "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"})
+	tokenizer, err := hashid_tokenizer.NewHashidTokenizer(&config.HashidTokenizerConfig{"ecafbaf0-1bcc-11ec-9621-0242ac130002", 5, "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"})
 	if err != nil{
 		log.Fatal(err)
 	}

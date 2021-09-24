@@ -27,7 +27,7 @@ var id2key = map[int]string {
 //alphabet: "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 func init(){
 	var err error
-	tokenizer, err = NewHashidTokenizer(&config.TokenizerConfig{
+	tokenizer, err = NewHashidTokenizer(&config.HashidTokenizerConfig{
 		Salt:      "ecafbaf0-1bcc-11ec-9621-0242ac130002",
 		MinLength: 5,
 		Alphabet:  "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
