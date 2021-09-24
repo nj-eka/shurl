@@ -30,10 +30,10 @@ function renderResponse(data) {
 }
 
 generateBtn.onclick = function() {
-    const requestShurl = {
-        targetUrl: targetUrl.value,
-        expiredInDays: expiredIn.value
-    };
+    const requestShurl = { targetUrl: targetUrl.value }
+    if (expiredIn.value) {
+        requestShurl.expiredInDays = parseInt(expiredIn.value)
+    }
     postData('/', requestShurl)
         .then((data) => {
             renderResponse(data);
