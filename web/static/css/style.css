@@ -1,0 +1,110 @@
+html
+{
+    box-sizing: border-box;
+    overflow: -moz-scrollbars-vertical;
+    overflow-y: scroll;
+    height: 100%;
+}
+
+* {
+    margin: 0;
+}
+
+*,
+*:before,
+*:after
+{
+    box-sizing: inherit;
+}
+
+body
+{
+    background: #fafafa;
+    height: 100%;
+}
+
+.header {
+    height: 25px;
+    border-bottom: 1px solid black;
+}
+
+.menu {
+    float: left;
+    margin-top: 5px;
+}
+
+.menu li {
+    float: left;
+    border-right: 1px solid black;
+    list-style-type: none;
+}
+
+.menu li a {
+    color: black;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: right;
+    text-decoration: none;
+    display: block;
+    padding: 0 5px;
+}
+
+.menu li a:hover {
+    color: green;
+    border-inline: 1px solid black;
+}
+
+.container {
+    margin: 0 auto;
+}
+
+.page_title {
+    height: 25px;
+    border-bottom: 1px solid black;
+    text-align: center;
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+.page {
+    height: calc(100% - 60px);
+}
+
+.content {
+    text-align: center;
+    margin: 20px;
+    font-size: 14px;
+}
+
+.content input[type=text] {
+    margin-left: 5%;
+    width: 55%;
+    font-size: 12px;
+    height: 20px;
+    margin-right: 3%;
+}
+
+.content button {
+    font-size: 12px;
+    height: 20px;
+    margin-top: 5px;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    background: darkseagreen;
+}
+.content button:hover {
+    background: greenyellow;
+}
+
+.footer {
+    text-align: center;
+    float: bottom;
+    height: 25px;
+    line-height: 25px;
+    background-color: lightgray;
+    color: darkslategray;
+    font-size: 12px;
+    flex: 0 0 auto;
+    border-top: 1px solid black;
+}

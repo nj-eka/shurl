@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shorten URL generator</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <script src="static/js/shurl.js" charset="UTF-8" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <ul class="menu">
+                <li><a href="/">Main</a></li>
+                <li><a href="openapi">OpenAPI</a></li>
+            </ul>
+        </div>
+        <div class="page_title">
+            <p>Shorten URL generator</p>
+        </div>
+        <div class="page">
+            <div class="content">
+                <label for="targetUrl">URL:</label>
+                <input id="targetUrl" type="text">
+                <button id="generate">Generate</button>
+            </div>
+            <div class="content">
+                <label for="expiredIn">Expired in (days):</label>
+                <input id="expiredIn" type="number">(Optional)
+            </div>
+            <div id="answers" class="content"></div>
+        </div>
+        <div class="footer">
+            <p>MIT Licence</p>
+        </div>
+    </div>
+</body>
+</html>

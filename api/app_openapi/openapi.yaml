@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: Url Shortener API
+  description: Url Shortener
+  version: 1.0.0
+servers:
+  - url: http://localhost:{port}/
+    description: Local testing server
+    variables:
+      port:
+        enum:
+          - '8443'
+          - '8444'
+        default: '8443'
+paths:
+  /:
+    post:
+      summary: Request short url (token) for target url with expiration interval (in days) setting
+      operationId: CreateShortUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestShortUrl"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseShortUrl"
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseShortUrl"
+        400:
+          description: Bad Request
+          content: {}
+        500:
+          description: Internal Server Error
+          content: {}
+  /{token}:
+    get:
+      summary: Redirect to target url by token
+      operationId: HitShortUrl
+      parameters:
+        - name: token
+          in: path
+          description: hit short url (redirect to target url + increment hits)
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: See Other
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+
+  /{token}/info:
+    get:
+      summary: Get short url info
+      operationId: GetShortUrlInfo
+      parameters:
+        - name: token
+          in: path
+          description: short url info
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Link"
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+components:
+  schemas:
+    RequestShortUrl:
+      type: object
+      required:
+        - targetUrl
+      properties:
+        targetUrl:
+          type: string
+          format: url
+        expiredInDays:
+          type: integer
+          format: int32
+    ResponseShortUrl:
+      type: object
+      required:
+        - shortUrl
+      properties:
+        shortUrl:
+          type: string
+          format: url
+        shortUrlInfo:
+          type: string
+          format: url
+    Link:
+      type: object
+      required:
+        - token
+        - targetUrl
+        - createdAt
+        - hits
+      properties:
+        token:
+          type: string
+          format: url
+        targetUrl:
+          type: string
+          format: url
+        createdAt:
+          type: string
+          format: date-time
+        expiredAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+        hits:
+          type: integer
+          format: int32
