@@ -13,8 +13,6 @@ COPY --from=builder /app/web /app/web
 
 ENV HOME /app
 WORKDIR /app
-RUN useradd -m heroku
-USER heroku
 
 EXPOSE 8443
 CMD /bin/shurl
