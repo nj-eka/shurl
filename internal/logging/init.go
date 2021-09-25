@@ -32,7 +32,7 @@ func Initialize(ctx context.Context, logCfg *config.LoggingConfig, usr *user.Use
 		} else {
 			logrus.SetOutput(file)
 			logFile = file
-			fmt.Println("logging to ", file.Name())
+			fmt.Println("logging to ", file)
 		}
 	} else {
 		fmt.Println("logging to standard output")
