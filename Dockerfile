@@ -15,4 +15,4 @@ ENV HOME /app
 WORKDIR /app
 
 EXPOSE 8443
-CMD ["./bin/shurl -config ./bin/config.yml"]
+CMD ["/app/bin/shurl -config /app/bin/config.yml"]
