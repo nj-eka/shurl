@@ -27,7 +27,7 @@ import (
 
 var (
 	appName, appDir      = fp.Base(os.Args[0]), fp.Dir(os.Args[0])
-	defaultAppConfigPath = fp.Join(appDir, "config.yaml")
+	defaultAppConfigPath = fp.Join(appDir, "config.yml")
 	// default config settings
 	appCfg = config.AppConfig{
 		Logging: &config.LoggingConfig{
@@ -184,8 +184,9 @@ func main() {
 		logging.LogError(err)
 		return
 	}
+	serverAddr := fmt.Sprintf("%s:%d", appCfg.Server.Host, appCfg.Server.Port)
 	server := &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", appCfg.Server.Host, appCfg.Server.Port),
+		Addr:         serverAddr,
 		Handler:      art,
 		ReadTimeout:  appCfg.Server.Timeout,
 		WriteTimeout: appCfg.Server.Timeout,
@@ -210,8 +211,8 @@ func main() {
 			logging.LogError(ctx, errs.KindServer, fmt.Errorf("shutdown http server failed: %w", shutdownCtx.Err()))
 		}
 	}()
-	err = server.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
+	logging.Msg(ctx).Info("server start listening on: ", serverAddr)
+	if err = server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logging.LogError(ctx, errs.KindServer, fmt.Errorf("http server failed: %w", err))
 	}
 }
