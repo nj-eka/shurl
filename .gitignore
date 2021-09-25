@@ -20,6 +20,5 @@ vendor/
 
 # app
 *.db
-*.sum
 *.log
 *.hints
