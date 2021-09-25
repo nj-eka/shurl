@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: /bin/shurl -config /bin/congig.yml
+  web: /app/shurl
