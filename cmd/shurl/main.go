@@ -27,7 +27,7 @@ import (
 
 var (
 	appName, appDir      = fp.Base(os.Args[0]), fp.Dir(os.Args[0])
-	defaultAppConfigPath = fp.Join(fp.Dir(appName), "config.yaml")
+	defaultAppConfigPath = fp.Join(appDir, "config.yaml")
 	// default config settings
 	appCfg = config.AppConfig{
 		Logging: &config.LoggingConfig{
