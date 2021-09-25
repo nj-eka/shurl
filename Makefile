@@ -3,7 +3,7 @@ CMD := $(PROJECT)/cmd/shurl
 
 GOOS = linux
 GOARCH = amd64
-CGO_ENABLED = 1
+CGO_ENABLED = 0
 
 RELEASE := $(shell git tag -l | tail -1 | grep -E "v.+"|| echo devel)
 COMMIT := git-$(shell git rev-parse --short HEAD)
