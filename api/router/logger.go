@@ -65,5 +65,5 @@ func (l *StructuredLoggerEntry) Panic(v interface{}, stack []byte) {
 		"stack": string(stack),
 		"panic": fmt.Sprintf("%+v", v),
 	})
-	logging.LoggerError(l.Logger.(*logrus.Logger), errs.SeverityCritical, v)  // todo: choose one of from frames or stack ...
+	logging.LoggerError(l.Logger.(*logrus.Logger), errs.SeverityCritical, v) // todo: choose one of from frames or stack ...
 }

@@ -12,7 +12,7 @@ func SetDefaultErrsSeverity(severity Severity) cu.PartialContextFn {
 }
 
 func GetDefaultErrsSeverity(ctx context.Context) Severity {
-	if severity, ok := ctx.Value(cu.DefaultErrsSeverityKey).(Severity); ok{
+	if severity, ok := ctx.Value(cu.DefaultErrsSeverityKey).(Severity); ok {
 		return severity
 	}
 	return SeverityError

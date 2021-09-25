@@ -36,7 +36,7 @@ func E(args ...interface{}) Error {
 		case Kind:
 			e.kind = a
 		case cu.Operation:
-			e.ops = cu.Operations{[]cu.Operation{a}}
+			e.ops = cu.Operations{Stack: []cu.Operation{a}}
 		case cu.Operations:
 			e.ops = a
 		case context.Context:
@@ -46,7 +46,7 @@ func E(args ...interface{}) Error {
 			e.requestId = cu.GetRequestID(a)
 		case Error: // todo: impl transient error in this case (need more cases...)
 			e.err = a
-			if e.kind == KindOther{
+			if e.kind == KindOther {
 				e.kind = KindTransient
 			}
 		case error:

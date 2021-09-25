@@ -15,12 +15,12 @@ import (
 var store app.LinkStore
 var expiredAt = time.Now()
 
-func Init(){
+func Init() {
 	ctx := context.Background()
 	_ = os.Remove("links.db")
 	var err error
-	store, err =  NewBoltLinkStore(ctx, config.BoltStoreConfig{FilePath: "links.db", Timeout: 10 * time.Second})
-	if err != nil{
+	store, err = NewBoltLinkStore(ctx, config.BoltStoreConfig{FilePath: "links.db", Timeout: 10 * time.Second})
+	if err != nil {
 		log.Fatal(err)
 	}
 }
@@ -28,7 +28,7 @@ func Init(){
 func TestMain(m *testing.M) {
 	Init()
 	code := m.Run()
-	_ = store.Close(nil)
+	_ = store.Close(context.TODO())
 	_ = os.Remove("links.db")
 	os.Exit(code)
 }
@@ -60,13 +60,13 @@ func Test_boltLinkStore_Create(t *testing.T) {
 			if gotAdded != tt.wantAdded {
 				t.Errorf("Create() gotAdded = %v, want %v", gotAdded, tt.wantAdded)
 			}
-			if tt.wantErr != nil || gotErr != nil{
-				if ee, ok := tt.wantErr.(errs.Error); ok{
+			if tt.wantErr != nil || gotErr != nil {
+				if ee, ok := tt.wantErr.(errs.Error); ok {
 					if ee == gotErr {
 						return
 					}
 				}
-				if !errors.Is(gotErr, tt.wantErr){
+				if !errors.Is(gotErr, tt.wantErr) {
 					t.Errorf("CreateToken() gotErr = %v, want %v", gotErr, tt.wantErr)
 				}
 			}
@@ -80,10 +80,10 @@ func Test_boltLinkStore_Get(t *testing.T) {
 		key int
 	}
 	tests := []struct {
-		name   string
-		args   args
-		wantLink   *app.Link
-		wantErrIs  error
+		name      string
+		args      args
+		wantLink  *app.Link
+		wantErrIs error
 	}{
 		{"get not existed", args{68734}, nil, app.ErrNotFound},
 		{"get first link", args{2}, &app.Link{
@@ -102,13 +102,13 @@ func Test_boltLinkStore_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotLink, gotErr := store.Get(ctx, tt.args.key)
-			if tt.wantErrIs != nil || gotErr != nil{
-				if ee, ok := tt.wantErrIs.(errs.Error); ok{
+			if tt.wantErrIs != nil || gotErr != nil {
+				if ee, ok := tt.wantErrIs.(errs.Error); ok {
 					if ee == gotErr {
 						return
 					}
 				}
-				if !errors.Is(gotErr, tt.wantErrIs){
+				if !errors.Is(gotErr, tt.wantErrIs) {
 					t.Errorf("Get() gotErr = %v, want %v", gotErr, tt.wantErrIs)
 					return
 				}
@@ -116,14 +116,14 @@ func Test_boltLinkStore_Get(t *testing.T) {
 			if gotLink == tt.wantLink {
 				return
 			}
-			if (gotLink != nil && tt.wantLink == nil) || (gotLink == nil && tt.wantLink != nil){
+			if (gotLink != nil && tt.wantLink == nil) || (gotLink == nil && tt.wantLink != nil) {
 				t.Errorf("Get() got = %v, want %v", gotLink, tt.wantLink)
 				return
 			}
 			if gotLink.Id != tt.wantLink.Id ||
 				gotLink.TargetUrl != tt.wantLink.TargetUrl ||
 				gotLink.ExpiredAt.UnixNano() != tt.wantLink.ExpiredAt.UnixNano() ||
-				gotLink.Hits != gotLink.Hits {
+				gotLink.Hits != tt.wantLink.Hits {
 				t.Errorf("Get() got = %v, want %v", gotLink, tt.wantLink)
 			}
 		})
@@ -136,19 +136,19 @@ func Test_boltLinkStore_Hit(t *testing.T) {
 		key int
 	}
 	tests := []struct {
-		name   string
-		args   args
-		wantLink   *app.Link
-		wantErrIs  error
+		name      string
+		args      args
+		wantLink  *app.Link
+		wantErrIs error
 	}{
 		{"hit not existed", args{1454987}, nil, app.ErrNotFound},
 		{"hit first link - 1", args{2}, &app.Link{
-			Id:        2,
-			Hits:      1,
+			Id:   2,
+			Hits: 1,
 		}, nil},
 		{"hit first link - 2", args{2}, &app.Link{
-			Id:        2,
-			Hits:      2,
+			Id:   2,
+			Hits: 2,
 		}, nil},
 		{"hit second link", args{3}, &app.Link{
 			Id:        3,
@@ -160,13 +160,13 @@ func Test_boltLinkStore_Hit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotLink, gotErr := store.Hit(ctx, tt.args.key)
-			if tt.wantErrIs != nil || gotErr != nil{
-				if ee, ok := tt.wantErrIs.(errs.Error); ok{
+			if tt.wantErrIs != nil || gotErr != nil {
+				if ee, ok := tt.wantErrIs.(errs.Error); ok {
 					if ee == gotErr {
 						return
 					}
 				}
-				if !errors.Is(gotErr, tt.wantErrIs){
+				if !errors.Is(gotErr, tt.wantErrIs) {
 					t.Errorf("HitLink() gotErr = %v, want %v", gotErr, tt.wantErrIs)
 					return
 				}
@@ -174,11 +174,11 @@ func Test_boltLinkStore_Hit(t *testing.T) {
 			if gotLink == tt.wantLink {
 				return
 			}
-			if (gotLink != nil && tt.wantLink == nil) || (gotLink == nil && tt.wantLink != nil){
+			if (gotLink != nil && tt.wantLink == nil) || (gotLink == nil && tt.wantLink != nil) {
 				t.Errorf("HitLink() got = %v, want %v", gotLink, tt.wantLink)
 				return
 			}
-			if gotLink.Id != tt.wantLink.Id || gotLink.Hits != gotLink.Hits {
+			if (gotLink.Id != tt.wantLink.Id) || (gotLink.Hits != tt.wantLink.Hits) {
 				t.Errorf("HitLink() got = %v, want %v", gotLink, tt.wantLink)
 			}
 		})
@@ -191,9 +191,9 @@ func Test_boltLinkStore_SetDeleted(t *testing.T) {
 		key int
 	}
 	tests := []struct {
-		name   string
-		args   args
-		wantErrIs  error
+		name      string
+		args      args
+		wantErrIs error
 	}{
 		{"delete not existed", args{5465}, app.ErrNotFound},
 		{"delete second link - 1", args{3}, nil},
@@ -202,13 +202,13 @@ func Test_boltLinkStore_SetDeleted(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotErr := store.SetDeleted(ctx, tt.args.key)
-			if tt.wantErrIs != nil || gotErr != nil{
-				if ee, ok := tt.wantErrIs.(errs.Error); ok{
+			if tt.wantErrIs != nil || gotErr != nil {
+				if ee, ok := tt.wantErrIs.(errs.Error); ok {
 					if ee == gotErr {
 						return
 					}
 				}
-				if !errors.Is(gotErr, tt.wantErrIs){
+				if !errors.Is(gotErr, tt.wantErrIs) {
 					t.Errorf("SetDeleted() gotErr = %v, want %v", gotErr, tt.wantErrIs)
 					return
 				}

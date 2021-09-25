@@ -14,7 +14,7 @@ func Msg(args ...interface{}) *logrus.Entry {
 		"rec":  "msg",
 		"type": "string",
 	}
-	if len(args) == 1 {  // only these use cases there were in stack for now
+	if len(args) == 1 { // only these use cases there were in stack for now
 		switch arg := args[0].(type) {
 		case cu.Operation, cu.Operations:
 			return logrus.WithFields(msgFields).WithField("ops", fmt.Sprintf("%s", arg))

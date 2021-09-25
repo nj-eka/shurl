@@ -20,17 +20,21 @@ var id2key = map[int]string{
 	1: "EdGed",
 	2: "XBa80",
 }
-var expiredAt = time.Now().AddDate(0,0,1)
+var expiredAt = time.Now().AddDate(0, 0, 1)
 
-func appInit(){
+func appInit() {
 	ctx := context.Background()
-	tokenizer, err := hashid_tokenizer.NewHashidTokenizer(&config.HashidTokenizerConfig{"ecafbaf0-1bcc-11ec-9621-0242ac130002", 5, "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"})
-	if err != nil{
+	tokenizer, err := hashid_tokenizer.NewHashidTokenizer(&config.HashidTokenizerConfig{
+		Salt:      "ecafbaf0-1bcc-11ec-9621-0242ac130002",
+		MinLength: 5,
+		Alphabet:  "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+	})
+	if err != nil {
 		log.Fatal(err)
 	}
 	_ = os.Remove("links.db")
 	store, err := bolt_store.NewBoltLinkStore(ctx, config.BoltStoreConfig{FilePath: "links.db", Timeout: 10 * time.Second})
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 	ap = app.NewApp(store, tokenizer)
@@ -39,7 +43,7 @@ func appInit(){
 func TestMain(m *testing.M) {
 	appInit()
 	code := m.Run()
-	_ = ap.Close(nil)
+	_ = ap.Close(context.TODO())
 	_ = os.Remove("links.db")
 	os.Exit(code)
 }
@@ -50,7 +54,7 @@ func TestApp_CreateToken(t *testing.T) {
 		targetUrl string
 		expiredAt *time.Time
 	}
-		tests := []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantKey   string
@@ -71,13 +75,13 @@ func TestApp_CreateToken(t *testing.T) {
 			if gotAdded != tt.wantAdded {
 				t.Errorf("CreateToken() gotAdded = %v, want %v", gotAdded, tt.wantAdded)
 			}
-			if tt.wantErr != nil || gotErr != nil{
-				if ee, ok := tt.wantErr.(errs.Error); ok{
+			if tt.wantErr != nil || gotErr != nil {
+				if ee, ok := tt.wantErr.(errs.Error); ok {
 					if ee == gotErr {
 						return
 					}
 				}
-				if !errors.Is(gotErr, tt.wantErr){
+				if !errors.Is(gotErr, tt.wantErr) {
 					t.Errorf("CreateToken() gotErr = %v, want %v", gotErr, tt.wantErr)
 				}
 			}
@@ -91,10 +95,10 @@ func TestApp_GetLink(t *testing.T) {
 		key string
 	}
 	tests := []struct {
-		name   string
-		args   args
-		wantLink   *app.Link
-		wantErrIs  error
+		name      string
+		args      args
+		wantLink  *app.Link
+		wantErrIs error
 	}{
 		{"get not existed", args{"DApEj4wbneowA"}, nil, app.ErrNotFound},
 		{"get first link", args{id2key[1]}, &app.Link{
@@ -113,28 +117,28 @@ func TestApp_GetLink(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotLink, gotErr := ap.GetLink(ctx, tt.args.key)
-			if tt.wantErrIs != nil || gotErr != nil{
-				if ee, ok := tt.wantErrIs.(errs.Error); ok{
+			if tt.wantErrIs != nil || gotErr != nil {
+				if ee, ok := tt.wantErrIs.(errs.Error); ok {
 					if ee == gotErr {
 						return
 					}
 				}
-				if !errors.Is(gotErr, tt.wantErrIs){
+				if !errors.Is(gotErr, tt.wantErrIs) {
 					t.Errorf("GetLink() gotErr = %v, want %v", gotErr, tt.wantErrIs)
 					return
 				}
 			}
-			if (gotLink == tt.wantLink){
+			if gotLink == tt.wantLink {
 				return
 			}
-			if (gotLink != nil && tt.wantLink == nil) || (gotLink == nil && tt.wantLink != nil){
+			if (gotLink != nil && tt.wantLink == nil) || (gotLink == nil && tt.wantLink != nil) {
 				t.Errorf("GetLink() got = %v, want %v", gotLink, tt.wantLink)
 				return
 			}
 			if gotLink.Id != tt.wantLink.Id ||
 				gotLink.TargetUrl != tt.wantLink.TargetUrl ||
 				gotLink.ExpiredAt.UnixNano() != tt.wantLink.ExpiredAt.UnixNano() ||
-				gotLink.Hits != gotLink.Hits {
+				gotLink.Hits != tt.wantLink.Hits {
 				t.Errorf("GetLink() got = %v, want %v", gotLink, tt.wantLink)
 			}
 			//if !reflect.DeepEqual(got, tt.want) {
@@ -149,19 +153,19 @@ func TestApp_HitLink(t *testing.T) {
 		key string
 	}
 	tests := []struct {
-		name   string
-		args   args
-		wantLink   *app.Link
-		wantErrIs  error
+		name      string
+		args      args
+		wantLink  *app.Link
+		wantErrIs error
 	}{
 		{"hit not existed", args{"DApEj4wbneowA"}, nil, app.ErrNotFound},
 		{"hit first link - 1", args{id2key[1]}, &app.Link{
-			Id:        1,
-			Hits:      1,
+			Id:   1,
+			Hits: 1,
 		}, nil},
 		{"hit first link - 2", args{id2key[1]}, &app.Link{
-			Id:        1,
-			Hits:      2,
+			Id:   1,
+			Hits: 2,
 		}, nil},
 		{"hit second link", args{id2key[2]}, &app.Link{
 			Id:        2,
@@ -173,25 +177,25 @@ func TestApp_HitLink(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotLink, gotErr := ap.HitLink(ctx, tt.args.key)
-			if tt.wantErrIs != nil || gotErr != nil{
-				if ee, ok := tt.wantErrIs.(errs.Error); ok{
+			if tt.wantErrIs != nil || gotErr != nil {
+				if ee, ok := tt.wantErrIs.(errs.Error); ok {
 					if ee == gotErr {
 						return
 					}
 				}
-				if !errors.Is(gotErr, tt.wantErrIs){
+				if !errors.Is(gotErr, tt.wantErrIs) {
 					t.Errorf("HitLink() gotErr = %v, want %v", gotErr, tt.wantErrIs)
 					return
 				}
 			}
-			if (gotLink == tt.wantLink){
+			if gotLink == tt.wantLink {
 				return
 			}
-			if (gotLink != nil && tt.wantLink == nil) || (gotLink == nil && tt.wantLink != nil){
+			if (gotLink != nil && tt.wantLink == nil) || (gotLink == nil && tt.wantLink != nil) {
 				t.Errorf("HitLink() got = %v, want %v", gotLink, tt.wantLink)
 				return
 			}
-			if gotLink.Id != tt.wantLink.Id || gotLink.Hits != gotLink.Hits {
+			if gotLink.Id != tt.wantLink.Id || gotLink.Hits != tt.wantLink.Hits {
 				t.Errorf("HitLink() got = %v, want %v", gotLink, tt.wantLink)
 			}
 			//if !reflect.DeepEqual(got, tt.want) {
@@ -207,9 +211,9 @@ func TestApp_DeleteLink(t *testing.T) {
 		key string
 	}
 	tests := []struct {
-		name   string
-		args   args
-		wantErrIs  error
+		name      string
+		args      args
+		wantErrIs error
 	}{
 		{"delete not existed", args{"DApEj4wbneowA"}, app.ErrNotFound},
 		{"delete second link - 1", args{id2key[1]}, nil},
@@ -218,13 +222,13 @@ func TestApp_DeleteLink(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotErr := ap.DeleteLink(ctx, tt.args.key)
-			if tt.wantErrIs != nil || gotErr != nil{
-				if ee, ok := tt.wantErrIs.(errs.Error); ok{
+			if tt.wantErrIs != nil || gotErr != nil {
+				if ee, ok := tt.wantErrIs.(errs.Error); ok {
 					if ee == gotErr {
 						return
 					}
 				}
-				if !errors.Is(gotErr, tt.wantErrIs){
+				if !errors.Is(gotErr, tt.wantErrIs) {
 					t.Errorf("DeleteLink() gotErr = %v, want %v", gotErr, tt.wantErrIs)
 					return
 				}

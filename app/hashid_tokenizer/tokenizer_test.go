@@ -12,27 +12,27 @@ const MaxUint = ^uint(0)
 const MaxInt = int(MaxUint >> 1)
 
 var tokenizer app.Tokenizer
-var id2key = map[int]string {
-	0: "EZead",
-	1: "EdGed",
-	2: "XBa80",
-	1000: "ZeEMB",
-	1000000: "ejM7A",
+var id2key = map[int]string{
+	0:          "EZead",
+	1:          "EdGed",
+	2:          "XBa80",
+	1000:       "ZeEMB",
+	1000000:    "ejM7A",
 	1000000000: "e1lLANM",
-	MaxInt: "DApEj4wbneowA",
+	MaxInt:     "DApEj4wbneowA",
 }
 
 //salt: "ecafbaf0-1bcc-11ec-9621-0242ac130002"
 //min-length: 5
 //alphabet: "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-func init(){
+func init() {
 	var err error
 	tokenizer, err = NewHashidTokenizer(&config.HashidTokenizerConfig{
 		Salt:      "ecafbaf0-1bcc-11ec-9621-0242ac130002",
 		MinLength: 5,
 		Alphabet:  "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	})
-	if err != nil{
+	if err != nil {
 		log.Fatalln(err)
 	}
 }

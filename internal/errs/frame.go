@@ -39,6 +39,7 @@ func (fs Frames) String() string {
 	}
 	return sb.String()
 }
+
 // ... or debug.Stack()
 func Trace(skip int) (result Frames) {
 	if withFrames {

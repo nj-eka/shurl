@@ -38,9 +38,9 @@ func (b *boltLinkStore) Create(ctx context.Context, targetUrl string, expiredAt 
 			_ = tx.Rollback()
 		}()
 		link := Link{}
-		if ie = tx.One("TargetUrl", targetUrl, &link); ie == nil{
+		if ie = tx.One("TargetUrl", targetUrl, &link); ie == nil {
 			ie = tx.UpdateField(&Link{Id: link.Id}, "ExpiredAt", expiredAt)
-		} else if ie == storm.ErrNotFound{
+		} else if ie == storm.ErrNotFound {
 			link.TargetUrl = targetUrl
 			link.CreatedAt = time.Now().UTC()
 			link.ExpiredAt = expiredAt
@@ -48,7 +48,7 @@ func (b *boltLinkStore) Create(ctx context.Context, targetUrl string, expiredAt 
 			added = true
 		}
 		if ie == nil {
-			if ie = tx.Commit(); ie == nil{
+			if ie = tx.Commit(); ie == nil {
 				return link.Id, added, nil
 			}
 		}
@@ -59,8 +59,8 @@ func (b *boltLinkStore) Create(ctx context.Context, targetUrl string, expiredAt 
 func (b *boltLinkStore) Get(ctx context.Context, id int) (*app.Link, errs.Error) {
 	ctx = cu.BuildContext(ctx, cu.AddContextOperation("bolt.Get"), errs.SetDefaultErrsKind(errs.KindStore))
 	link := Link{}
-	if err := b.db.One("Id", id, &link); err != nil{
-		if err == storm.ErrNotFound{
+	if err := b.db.One("Id", id, &link); err != nil {
+		if err == storm.ErrNotFound {
 			return nil, errs.E(ctx, errs.SeverityWarning, app.ErrNotFound)
 		}
 		return nil, errs.E(ctx, fmt.Errorf("getting link with id [%d] failed: %w", id, err))
@@ -84,10 +84,10 @@ func (b *boltLinkStore) Hit(ctx context.Context, id int) (*app.Link, errs.Error)
 			_ = tx.Rollback()
 		}()
 		link := Link{}
-		if ie = tx.One("Id", id, &link); ie == nil{
+		if ie = tx.One("Id", id, &link); ie == nil {
 			link.Hits++
 			if ie = tx.UpdateField(&Link{Id: id}, "Hits", link.Hits); ie == nil {
-				if ie = tx.Commit(); ie == nil{
+				if ie = tx.Commit(); ie == nil {
 					return &app.Link{
 						Id:        link.Id,
 						TargetUrl: link.TargetUrl,
@@ -99,18 +99,18 @@ func (b *boltLinkStore) Hit(ctx context.Context, id int) (*app.Link, errs.Error)
 				}
 			}
 		}
-		if ie == storm.ErrNotFound{
+		if ie == storm.ErrNotFound {
 			return nil, errs.E(ctx, errs.SeverityWarning, app.ErrNotFound)
 		}
 	}
-	return  nil, errs.E(ctx, fmt.Errorf("hitting link with id [%d] failed: %w", id, ie))
+	return nil, errs.E(ctx, fmt.Errorf("hitting link with id [%d] failed: %w", id, ie))
 }
 
 func (b *boltLinkStore) SetDeleted(ctx context.Context, id int) errs.Error {
 	ctx = cu.BuildContext(ctx, cu.AddContextOperation("bolt.SetDel"), errs.SetDefaultErrsKind(errs.KindStore))
 	deletedAt := time.Now().UTC()
-	if err := b.db.UpdateField(&Link{Id: id}, "DeletedAt", &deletedAt); err != nil{
-		if err == storm.ErrNotFound{
+	if err := b.db.UpdateField(&Link{Id: id}, "DeletedAt", &deletedAt); err != nil {
+		if err == storm.ErrNotFound {
 			return errs.E(ctx, errs.SeverityWarning, app.ErrNotFound)
 		}
 		return errs.E(ctx, fmt.Errorf("setting deleted link with id [%d] failed: %w", id, err))
@@ -120,8 +120,8 @@ func (b *boltLinkStore) SetDeleted(ctx context.Context, id int) errs.Error {
 
 func (b *boltLinkStore) Delete(ctx context.Context, id int) errs.Error {
 	ctx = cu.BuildContext(ctx, cu.AddContextOperation("bolt.Delete"), errs.SetDefaultErrsKind(errs.KindStore))
-	if err := b.db.DeleteStruct(&Link{Id: id}); err != nil{
-		if err == storm.ErrNotFound{
+	if err := b.db.DeleteStruct(&Link{Id: id}); err != nil {
+		if err == storm.ErrNotFound {
 			return errs.E(ctx, errs.SeverityWarning, app.ErrNotFound)
 		}
 		return errs.E(ctx, fmt.Errorf("setting deleted link with id [%d] failed: %w", id, err))

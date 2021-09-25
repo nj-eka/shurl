@@ -12,7 +12,7 @@ func SetDefaultErrsKind(kind Kind) cu.PartialContextFn {
 }
 
 func GetDefaultErrsKind(ctx context.Context) Kind {
-	if kind, ok := ctx.Value(cu.DefaultErrsKindKey).(Kind); ok{
+	if kind, ok := ctx.Value(cu.DefaultErrsKindKey).(Kind); ok {
 		return kind
 	}
 	return KindOther
