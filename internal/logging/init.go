@@ -32,7 +32,10 @@ func Initialize(ctx context.Context, logCfg *config.LoggingConfig, usr *user.Use
 		} else {
 			logrus.SetOutput(file)
 			logFile = file
+			fmt.Println("logging to ", file.Name())
 		}
+	} else {
+		fmt.Println("logging to standard output")
 	}
 	fieldMap := logrus.FieldMap{
 		logrus.FieldKeyTime:  "ts",

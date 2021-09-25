@@ -6,13 +6,13 @@ import (
 )
 
 type errorData struct {
-	err      error
-	severity Severity
-	kind   Kind
-	ops    cu.Operations
-	requestId	string
-	frames []Frame
-	ts       int64
+	err       error
+	severity  Severity
+	kind      Kind
+	ops       cu.Operations
+	requestId string
+	frames    []Frame
+	ts        int64
 }
 
 var _ Error = &errorData{}
@@ -27,8 +27,8 @@ func (e errorData) TimeStamp() time.Time {
 }
 
 func (e errorData) Error() string {
-	if e.kind == KindTransient{
-		if ee, ok := e.err.(Error); ok{
+	if e.kind == KindTransient {
+		if ee, ok := e.err.(Error); ok {
 			return ee.Unwrap().Error()
 		}
 	}

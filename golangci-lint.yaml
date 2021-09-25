@@ -1,0 +1,38 @@
+run:
+  concurrency: 4
+  timeout: 30s
+  issues-exit-code: 1
+  tests: true
+  skip-dirs-use-default: true
+  allow-parallel-runners: false
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+  sort-results: false
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/nj-eka/shurl
+  govet:
+    check-shadowing: false
+
+linters:
+  disable-all: true
+  enable:
+  - gofmt
+#  - goimports
+  - govet
+  - gosimple
+  - bodyclose
+  - deadcode
+  - exportloopref
+  - ineffassign
+  - unused
+  - errcheck
+  - staticcheck
+  - structcheck
+  - typecheck
+  - varcheck

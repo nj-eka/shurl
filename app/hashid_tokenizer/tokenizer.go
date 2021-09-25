@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/nj-eka/shurl/app"
 	"github.com/nj-eka/shurl/config"
+	cu "github.com/nj-eka/shurl/internal/contexts"
+	"github.com/nj-eka/shurl/internal/logging"
 	"github.com/speps/go-hashids"
 )
 
@@ -12,7 +14,7 @@ type HashidTokenizer struct {
 }
 
 func (htz *HashidTokenizer) Decode(key string) (int, error) {
-	if ids, err := htz.h.DecodeWithError(key); err != nil{
+	if ids, err := htz.h.DecodeWithError(key); err != nil {
 		return -1, err
 	} else {
 		if len(ids) != 1 {
@@ -23,7 +25,7 @@ func (htz *HashidTokenizer) Decode(key string) (int, error) {
 }
 
 func (htz *HashidTokenizer) Encode(id int) (string, error) {
-	if key, err := htz.h.Encode([]int{id}); err != nil{
+	if key, err := htz.h.Encode([]int{id}); err != nil {
 		return "", err
 	} else {
 		return key, nil
@@ -31,8 +33,9 @@ func (htz *HashidTokenizer) Encode(id int) (string, error) {
 }
 
 func NewHashidTokenizer(cfg *config.HashidTokenizerConfig) (app.Tokenizer, error) {
+	logging.Msg(cu.Operation("hashid_init")).Debugf("config: %v", cfg)
 	hd := hashids.NewData()
-	if cfg != nil{
+	if cfg != nil {
 		if cfg.Salt != "" {
 			hd.Salt = cfg.Salt
 		}

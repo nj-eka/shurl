@@ -1,7 +1,6 @@
 package contexts
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -59,7 +58,7 @@ func (ops Operations) String() string {
 		if i > 0 {
 			sb.WriteString("/")
 		}
-		sb.WriteString(fmt.Sprintf("%s", op))
+		sb.WriteString(string(op))
 	}
 	return sb.String()
 }

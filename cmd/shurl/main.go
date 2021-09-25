@@ -26,9 +26,9 @@ import (
 )
 
 var (
-	appName = fp.Base(os.Args[0])
-	appDir  = fp.Join(fp.Dir(appName), "config.yaml")
-
+	appName, appDir      = fp.Base(os.Args[0]), fp.Dir(os.Args[0])
+	defaultAppConfigPath = fp.Join(fp.Dir(appName), "config.yaml")
+	// default config settings
 	appCfg = config.AppConfig{
 		Logging: &config.LoggingConfig{
 			FilePath: fp.Join(appDir, appName+".log"),
@@ -53,28 +53,31 @@ var (
 			},
 		},
 	}
-
-	usr *user.User
-	a   *app.App
+	currConfigSaveToPath string
+	usr                  *user.User
+	a                    *app.App
 )
 
-// app init, exit on error
-func init() {
-	// todo: print app version
+func prepareConfig() {
 	var (
 		err                               error
 		envPrefix, dotEnvPath, configPath string
+		currConfigSaveToPath              string
 	)
 	flag.StringVar(&envPrefix, "env-prefix", appName, "env prefix")
-	flag.StringVar(&dotEnvPath, "env", ".env", "path to .env file")
-	flag.StringVar(&configPath, "config", appDir, "path to config file")
+	flag.StringVar(&dotEnvPath, "env", ".env", "path to .env file") // added to simplify deployment procedure
+	flag.StringVar(&configPath, "config", defaultAppConfigPath, "path to config file")
+	flag.StringVar(&currConfigSaveToPath, "save-config", "", "path to save current resolved config")
 	flag.Parse()
+
 	_ = godotenv.Load(dotEnvPath)
 	viper.SetConfigFile(configPath)
+	// list of environment variables that replace config values
+	// (read from config file with default values specified in app: appCfg)
+	// in format: APPNAME_LEVELS_WITH_UNDERLINE_IN_UPPERCASE (see .env)
 	viper.SetEnvPrefix(envPrefix)
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
-	_ = viper.BindEnv("logging.level") // no case of "missing key to bind to"
-	_ = viper.BindEnv("logging.format")
+	_ = viper.BindEnv("logging.level") // there is no case of "missing key to bind to"
 	_ = viper.BindEnv("logging.path")
 	_ = viper.BindEnv("server.addr")
 	_ = viper.BindEnv("store.bolt.path")
@@ -95,25 +98,39 @@ func init() {
 	if err != nil {
 		log.Fatalln("Unknown user: ", err)
 	}
-	if err := logging.Initialize(nil, appCfg.Logging, usr); err != nil {
+	if err := logging.Initialize(context.TODO(), appCfg.Logging, usr); err != nil {
 		log.Fatalln("Logging init failed: ", err)
 	}
-	// logging is initialized -> start logging
+	logging.Msg().Infof("app version %s built from %s on %s\n", app.Version, app.Commit, app.BuildTime)
+}
+
+// app init, exit on error
+func init() {
+	fmt.Printf("short url generator has version %s built from %s on %s\n", app.Version, app.Commit, app.BuildTime)
+	prepareConfig()
+	// logging is initialized
 	ctx := cu.BuildContext(context.Background(), cu.SetContextOperation("00.init"), errs.SetDefaultErrsSeverity(errs.SeverityCritical))
+	logging.Msg(ctx).Infof("pid:%d user:%d(%d) group:%d(%d)", os.Getpid(), os.Getuid(), os.Geteuid(), os.Getgid(), os.Getegid())
 	if appCfg.Server == nil {
 		logging.LogError(ctx, errs.KindServer, "no server config")
 		log.Exit(1)
 	}
-	if appCfg.Router == nil{
+	if appCfg.Router == nil {
 		logging.LogError(ctx, errs.KindRouter, "no router config")
 		log.Exit(1)
 	}
-	rd, err := fsutils.ResolvePath(appCfg.Router.WebPath, usr)
-	if err != nil{
+	var err error
+	appCfg.Router.WebPath, err = fsutils.ResolvePath(appCfg.Router.WebPath, usr)
+	if err != nil {
 		logging.LogError(ctx, errs.KindRouter, "invalid router web path")
 		log.Exit(1)
 	}
-	appCfg.Router.WebPath = rd
+	if currConfigSaveToPath != "" {
+		if currConfigSaveToPath, err = fsutils.SafeParentResolvePath(currConfigSaveToPath, usr, 0700); err != nil {
+			logging.LogError(ctx, errs.KindInvalidValue, fmt.Errorf("invalid path [%s] to save config: %w", currConfigSaveToPath, err))
+			log.Exit(1)
+		}
+	}
 	var tokenizer app.Tokenizer
 	if appCfg.Tokenizer != nil && appCfg.Tokenizer.Hashid != nil {
 		tokenizer, err = hashid_tokenizer.NewHashidTokenizer(appCfg.Tokenizer.Hashid)
@@ -127,7 +144,7 @@ func init() {
 	}
 	var store app.LinkStore
 	if appCfg.Store != nil && appCfg.Store.Bolt != nil {
-		if rd, err = fsutils.SafeParentResolvePath(appCfg.Store.Bolt.FilePath, usr, 0700); err == nil{
+		if appCfg.Store.Bolt.FilePath, err = fsutils.SafeParentResolvePath(appCfg.Store.Bolt.FilePath, usr, 0700); err == nil {
 			store, err = bolt_store.NewBoltLinkStore(ctx, *appCfg.Store.Bolt)
 		}
 		if err != nil {
@@ -138,11 +155,18 @@ func init() {
 		logging.LogError(ctx, errs.KindStore, "no store config")
 		log.Exit(1)
 	}
+	if currConfigSaveToPath != "" {
+		if err = viper.WriteConfigAs(currConfigSaveToPath); err != nil {
+			logging.LogError(ctx, errs.KindIO, fmt.Errorf("saving config to file [%s] failed: %w", currConfigSaveToPath, err))
+			// no exit (or close store)
+		}
+	}
+
 	a = app.NewApp(store, tokenizer)
 }
 
 func main() {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt) //, syscall.SIGINT, syscall.SIGQUIT)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	ctx = cu.BuildContext(ctx, cu.SetContextOperation("0.main"))
 	defer func() {
 		cancel()
@@ -152,7 +176,7 @@ func main() {
 		logging.Finalize()
 	}()
 	art, err := router.NewAppRouter(ctx, a, appCfg.Router)
-	if err != nil{
+	if err != nil {
 		logging.LogError(err)
 		return
 	}

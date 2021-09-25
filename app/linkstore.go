@@ -9,7 +9,7 @@ import (
 
 var ErrNotFound = errors.New("not found")
 
-type LinkStore interface{
+type LinkStore interface {
 	Create(ctx context.Context, targetUrl string, expiredAt *time.Time) (int, bool, errs.Error)
 	Get(ctx context.Context, id int) (*Link, errs.Error)
 	Hit(ctx context.Context, id int) (*Link, errs.Error)

@@ -9,14 +9,14 @@ import (
 
 var tz app.Tokenizer
 
-func init(){
+func init() {
 	var err error
 	tz, err = NewHashidTokenizer(&config.HashidTokenizerConfig{
 		Salt:      "ecafbaf0-1bcc-11ec-9621-0242ac130002",
 		MinLength: 5,
 		Alphabet:  "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	})
-	if err != nil{
+	if err != nil {
 		log.Fatalln(err)
 	}
 }
@@ -39,7 +39,7 @@ func BenchmarkHashidTokenizer_Gets(b *testing.B) {
 		if err != nil {
 			b.Error(err)
 		}
-		if j != i{
+		if j != i {
 			b.Error("fail")
 		}
 	}

@@ -1,6 +1,6 @@
 shutdown-timeout: 30s
 server:
-  addr: "0.0.0.0:8443"
+  addr: ":8443"
   timeout: 3s
 router:
   web-path: "web"
