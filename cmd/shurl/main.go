@@ -94,10 +94,10 @@ func prepareConfig() {
 			log.Fatalln("Invalid config: ", err)
 		}
 	}
-	usr, err = fsutils.GetCurrentUser()
-	if err != nil {
-		log.Fatalln("Unknown user: ", err)
-	}
+	//usr, err = fsutils.GetCurrentUser()
+	//if err != nil {
+	//	log.Fatalln("Unknown user: ", err)
+	//}
 	if err := logging.Initialize(context.TODO(), appCfg.Logging, usr); err != nil {
 		log.Fatalln("Logging init failed: ", err)
 	}

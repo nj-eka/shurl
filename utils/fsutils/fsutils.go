@@ -10,17 +10,17 @@ import (
 
 // ResolvePath {"" -> ".", "~..." -> "user.HomeDir..."} -> Abs
 func ResolvePath(path string, usr *user.User) (string, error) {
-	var err error
+	//	var err error
 	if path == "" {
 		path = "."
 	}
-	if strings.HasPrefix(path, "~") {
-		if usr == nil {
-			usr, err = GetCurrentUser()
-			if err != nil {
-				return path, fmt.Errorf("resolving path [%s] failed due to inability to get user info: %w", path, err)
-			}
-		}
+	if strings.HasPrefix(path, "~") && usr != nil {
+		//if usr == nil {
+		//	usr, err = GetCurrentUser()
+		//	if err != nil {
+		//		return path, fmt.Errorf("resolving path [%s] failed due to inability to get user info: %w", path, err)
+		//	}
+		//}
 		path = usr.HomeDir + path[1:]
 	}
 	return filepath.Abs(path)
