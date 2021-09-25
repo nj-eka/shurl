@@ -6,9 +6,15 @@ RUN go mod download
 RUN make build
 
 FROM scratch
-WORKDIR /bin
-COPY --from=builder /app/bin/shurl .
-COPY --from=builder /app/config/docker/config.yml .
-COPY --from=builder /app/web ./web
+
+COPY --from=builder /app/bin/shurl /app/bin
+COPY --from=builder /app/config/docker/config.yml /app/bin
+COPY --from=builder /app/web /app/web
+
+ENV HOME /app
+WORKDIR /app
+RUN useradd -m heroku
+USER heroku
+
 EXPOSE 8443
-CMD ["shurl"]
+CMD /bin/shurl
