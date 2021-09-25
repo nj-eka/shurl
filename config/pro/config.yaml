@@ -5,7 +5,7 @@ server:
 router:
   web-path: "web"
 logging:
-  path: "shurl.log"
+  path: ""
   level: info
   format: text
 store:
