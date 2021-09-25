@@ -36,7 +36,9 @@ var (
 			Format:   logging.DefaultFormat,
 		},
 		Server: &config.ServerConfig{
-			Address: ":8443",
+			Host: "",
+			Port: 8443,
+			// Address: ":8443",
 			Timeout: 0,
 		},
 		Store: &config.StoreConfig{
@@ -79,7 +81,9 @@ func prepareConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 	_ = viper.BindEnv("logging.level") // there is no case of "missing key to bind to"
 	_ = viper.BindEnv("logging.path")
-	_ = viper.BindEnv("server.addr")
+	//_ = viper.BindEnv("server.addr")
+	_ = viper.BindEnv("server.host")
+	_ = viper.BindEnv("server.port", "PORT")
 	_ = viper.BindEnv("store.bolt.path")
 	_ = viper.BindEnv("tokenizer.salt")
 	viper.AutomaticEnv()
@@ -181,7 +185,7 @@ func main() {
 		return
 	}
 	server := &http.Server{
-		Addr:         appCfg.Server.Address,
+		Addr:         fmt.Sprintf("%s:%d", appCfg.Server.Host, appCfg.Server.Port),
 		Handler:      art,
 		ReadTimeout:  appCfg.Server.Timeout,
 		WriteTimeout: appCfg.Server.Timeout,

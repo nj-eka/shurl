@@ -28,7 +28,9 @@ type LoggingConfig struct {
 //  addr: "0.0.0.0:8443"
 //  timeout: 3s
 type ServerConfig struct {
-	Address string        `mapstructure:"addr"`
+	// Address string        `mapstructure:"addr"`
+	Host    string        `mapstructure:"host"`
+	Port    int           `mapstructure:"port"`
 	Timeout time.Duration `mapstructure:"timeout"`
 }
 
