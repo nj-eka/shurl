@@ -54,11 +54,11 @@ func NewAppRouter(ctx context.Context, a *app.App, cfg *config.RouterConfig) (*A
 	// add openapi (swagger) ui frontend
 	r.Get("/openapi/swagger.json", func(w http.ResponseWriter, r *http.Request) {
 		ctx := cu.BuildContext(r.Context(), cu.AddContextOperation("openapi"), errs.SetDefaultErrsKind(errs.KindRouter))
-		if data, err := swagger.MarshalJSON(); err != nil {
-			logging.LogError(ctx, fmt.Errorf("marshaling swagger failed: %w", err))
-		} else {
-			logging.Msg(ctx).Debugln(string(data))
-		}
+		//if data, err := swagger.MarshalJSON(); err != nil {
+		//	logging.LogError(ctx, fmt.Errorf("marshaling swagger failed: %w", err))
+		//} else {
+		//	logging.Msg(ctx).Debugln(string(data))
+		//}
 		if err = json.NewEncoder(w).Encode(swagger); err != nil {
 			logging.LogError(ctx, fmt.Errorf("marshaling swagger failed: %w", err))
 		}
