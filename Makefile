@@ -9,10 +9,13 @@ RELEASE := $(shell git tag -l | tail -1 | grep -E "v.+"|| echo devel)
 COMMIT := git-$(shell git rev-parse --short HEAD)
 BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
-check:
+format:
+	go fmt $(shell go list ./...)
+
+check: format
 	golangci-lint run -c golangci-lint.yaml
 
-test:
+test: check
 	go test ./...
 
 .PHONY: build

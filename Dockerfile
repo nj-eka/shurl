@@ -4,16 +4,16 @@ WORKDIR /app
 COPY . .
 RUN go mod download
 RUN make build
+RUN ls -la *
+
 
 FROM scratch
 
 WORKDIR /app
+COPY --from=builder /app/bin/shurl /app
+COPY --from=builder /app/config/docker/config.yml /app
+COPY --from=builder /app/web /app/web
 ENV HOME /app
 
-COPY --from=builder /app/bin/shurl ./bin
-COPY --from=builder /app/config/docker/config.yml ./bin
-COPY --from=builder /app/web/static ./web/static
-COPY --from=builder /app/web/templates ./web/templates
-
 EXPOSE 8443
-#CMD ["bin/shurl"]
+CMD ["/app/shurl"]

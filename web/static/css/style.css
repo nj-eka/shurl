@@ -77,11 +77,19 @@ body
 }
 
 .content input[type=text] {
-    margin-left: 5%;
+    margin-left: 20px;
     width: 55%;
     font-size: 12px;
     height: 20px;
-    margin-right: 3%;
+    margin-right: 20px;
+}
+
+.content input[type=number] {
+    margin-left: 20px;
+    width: 100px;
+    font-size: 12px;
+    height: 20px;
+    margin-right: 20px;
 }
 
 .content button {
