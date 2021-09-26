@@ -10,9 +10,10 @@ FROM scratch
 WORKDIR /app
 ENV HOME /app
 
-COPY --from=builder /app/bin/shurl .
-COPY --from=builder /app/config/docker/config.yml .
-COPY --from=builder /app/web ./web
+COPY --from=builder /app/bin/shurl ./bin
+COPY --from=builder /app/config/docker/config.yml ./bin
+COPY --from=builder /app/web/static ./web/static
+COPY --from=builder /app/web/templates ./web/templates
 
 EXPOSE 8443
-CMD ["./shurl"]
+#CMD ["bin/shurl"]
