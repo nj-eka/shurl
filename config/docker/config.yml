@@ -10,7 +10,7 @@ logging:
   format: text
 store:
   bolt:
-    path: "links.db"
+    path: "data/links.db"
     timeout: 1s
 tokenizer:
   hashid:
