@@ -89,7 +89,10 @@ SHURL_STORE_BOLT_PATH="path/to/bolt.db"
 SHURL_TOKENIZER_SALT="unique string for your token generator"
 SHURL_ROUTER_WEB_PATH="path/to/web_dir"
 ```
-
+### User interface (screenshots):
+![index page](./docs/imgs/index_page.png)
+![info result](./docs/imgs/info_result.png)
+![openapi](./docs/imgs/openapi_page.png)
 
 ## Ideas for futures:
 
