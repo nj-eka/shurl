@@ -2,6 +2,7 @@ FROM golang:latest AS builder
 
 WORKDIR /app
 COPY . .
+RUN mkdir data && touch data/links.db && chmod a+rw data/links.db
 RUN go mod download
 RUN make build
 
