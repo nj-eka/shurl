@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: ./shurl
+  web: /app/shurl
