@@ -46,7 +46,7 @@ type RouterConfig struct {
 //    timeout: 1s
 type StoreConfig struct {
 	Bolt *BoltStoreConfig `mapstructure:"bolt"`
-	Mem *MemStoreConfig `mapstructure:"mem"`
+	Mem  *MemStoreConfig  `mapstructure:"mem"`
 }
 
 type BoltStoreConfig struct {
@@ -55,7 +55,7 @@ type BoltStoreConfig struct {
 }
 
 type MemStoreConfig struct {
-	FilePath string        `mapstructure:"path"`
+	FilePath string `mapstructure:"path"`
 }
 
 // tokenizer:

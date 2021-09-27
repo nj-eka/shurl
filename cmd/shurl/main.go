@@ -152,18 +152,19 @@ func init() {
 		if appCfg.Store.Bolt != nil {
 			if appCfg.Store.Bolt.FilePath, err = fsutils.SafeParentResolvePath(appCfg.Store.Bolt.FilePath, usr, 0700); err == nil {
 				store, err = bolt_store.NewBoltLinkStore(ctx, *appCfg.Store.Bolt)
-			} else {
+			}
+			if err != nil {
 				logging.LogError(ctx, errs.KindStore, fmt.Errorf("init bolt store failed: %w", err))
 				log.Exit(1)
 			}
 		} else if appCfg.Store.Mem != nil {
-			if appCfg.Store.Mem.FilePath != ""{
+			if appCfg.Store.Mem.FilePath != "" {
 				if appCfg.Store.Mem.FilePath, err = fsutils.SafeParentResolvePath(appCfg.Store.Mem.FilePath, usr, 0700); err != nil {
 					logging.LogError(ctx, errs.KindStore, fmt.Errorf("init mem store failed: %w", err))
 					log.Exit(1)
 				}
 			}
-			if store, err = mem_store.NewMemStore(ctx, *appCfg.Store.Mem); err != nil{
+			if store, err = mem_store.NewMemStore(ctx, *appCfg.Store.Mem); err != nil {
 				logging.LogError(ctx, errs.KindStore, fmt.Errorf("init mem store failed: %w", err))
 				log.Exit(1)
 			}

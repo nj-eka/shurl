@@ -14,26 +14,26 @@ var ErrNotFound = errors.New("not found")
 var ErrInvalidValue = errors.New("invalid value")
 
 type mapLinkManager struct {
-	path string
-	stop <-chan struct{}
-	completed chan struct{}
-	err error
-	mapLinks map[string]*Link // int -> string for json marshaling
+	path         string
+	stop         <-chan struct{}
+	completed    chan struct{}
+	err          error
+	mapLinks     map[string]*Link // int -> string for json marshaling
 	mapIndexUrls map[string]string
-	chOps    chan request
-	wg sync.WaitGroup
-	next int
+	chOps        chan request
+	wg           sync.WaitGroup
+	next         int
 }
 
 type request map[string]interface{}
 
-type response struct{
+type response struct {
 	value interface{}
-	err error
+	err   error
 }
 
-type addedResult struct{
-	id int
+type addedResult struct {
+	id    int
 	added bool
 }
 
@@ -48,11 +48,11 @@ func newMapManager(stop <-chan struct{}, path string) (*mapLinkManager, error) {
 			}
 		} else {
 			defer file.Close()
-			if err := json.NewDecoder(file).Decode(&mapLinks); err != nil{
+			if err := json.NewDecoder(file).Decode(&mapLinks); err != nil {
 				return nil, err
 			}
 			mapIndexUrls = make(map[string]string, len(mapLinks))
-			for cid, link := range mapLinks{
+			for cid, link := range mapLinks {
 				mapIndexUrls[link.TargetUrl] = cid
 				if next < link.Id {
 					next = link.Id
@@ -61,26 +61,26 @@ func newMapManager(stop <-chan struct{}, path string) (*mapLinkManager, error) {
 		}
 	}
 	ms := mapLinkManager{
-		path: path,
-		stop: stop,
-		mapLinks: mapLinks,
+		path:         path,
+		stop:         stop,
+		mapLinks:     mapLinks,
 		mapIndexUrls: mapIndexUrls,
-		next: next,
+		next:         next,
 		// buffer length doesn't matter here in fact cuz blocking will be in any case, whether it is writing or reading
 		// operations are serialized / linearized as an alternative to mutex, but with the possibility of unified logging of operations
-		chOps:    make(chan request, 0),
+		chOps:     make(chan request),
 		completed: make(chan struct{}),
-		wg: sync.WaitGroup{},
+		wg:        sync.WaitGroup{},
 	}
 	ms.startProcessOperations()
 	return &ms, nil
 }
 
-func (mlm *mapLinkManager) startProcessOperations(){
-	go func(){
+func (mlm *mapLinkManager) startProcessOperations() {
+	go func() {
 		<-mlm.stop
 		mlm.stop = nil // == don't accept new operation (+ panic on re-closing)
-		go func(){
+		go func() {
 			mlm.wg.Wait() // wait for last operation being completed
 			close(mlm.chOps)
 			mlm.save()
@@ -88,78 +88,71 @@ func (mlm *mapLinkManager) startProcessOperations(){
 	}()
 	go func() {
 		defer close(mlm.completed)
-		for {
-			select {
-			case request, more := <-mlm.chOps:
-				if !more {
-					return
-				} else {
-					op := request["op"]
-					switch{
-					case op == "addLink":
-						resCh := request["rc"].(chan response)
-						url := request["url"].(string)
-						var link *Link
-						var sid string
-						var ok bool
-						if sid, ok = mlm.mapIndexUrls[url]; !ok{
-							mlm.next++
-							sid = strconv.Itoa(mlm.next)
-							link = &Link{
-								Id:        mlm.next,
-								TargetUrl: url,
-								CreatedAt: time.Now().UTC(),
-								DeletedAt: nil,
-								ExpiredAt: request["expiredAt"].(*time.Time),
-								Hits:      0,
-							}
-							mlm.mapLinks[sid] = link
-							mlm.mapIndexUrls[url] = sid
-						}
-						link = mlm.mapLinks[sid]
-						resCh <- response{value : &addedResult{id: link.Id, added: !ok}}
-					case op == "getLink":
-						sid := strconv.Itoa(request["id"].(int))
-						resCh := request["rc"].(chan response)
-						if link, ok := mlm.mapLinks[sid]; ok{
-							resCh <- response{value: link}
-						} else {
-							resCh <- response{err: ErrNotFound}
-						}
-					case op == "hitLink":
-						sid := strconv.Itoa(request["id"].(int))
-						resCh := request["rc"].(chan response)
-						if link, ok := mlm.mapLinks[sid]; ok{
-							link.Hits++
-							resCh <- response{value: link}
-						} else {
-							resCh <- response{err: ErrNotFound}
-						}
-					case op == "setLinkDeleted":
-						sid := strconv.Itoa(request["id"].(int))
-						resCh := request["rc"].(chan response)
-						if link, ok := mlm.mapLinks[sid]; ok{
-							dt := time.Now().UTC()
-							link.DeletedAt = &dt
-							resCh <- response{value: link}
-						} else {
-							resCh <- response{err: ErrNotFound}
-						}
-					case op == "removeLink":
-						sid := strconv.Itoa(request["id"].(int))
-						resCh := request["rc"].(chan response)
-						if link, ok := mlm.mapLinks[sid]; ok{
-							delete(mlm.mapIndexUrls, link.TargetUrl)
-							delete(mlm.mapLinks, sid)
-							resCh <- response{}
-						} else {
-							resCh <- response{err: ErrNotFound}
-						}
-					default:
-						// don't panic
-						continue
+		for request := range mlm.chOps {
+			op := request["op"]
+			switch {
+			case op == "addLink":
+				resCh := request["rc"].(chan response)
+				url := request["url"].(string)
+				var link *Link
+				var sid string
+				var ok bool
+				if sid, ok = mlm.mapIndexUrls[url]; !ok {
+					mlm.next++
+					sid = strconv.Itoa(mlm.next)
+					link = &Link{
+						Id:        mlm.next,
+						TargetUrl: url,
+						CreatedAt: time.Now().UTC(),
+						DeletedAt: nil,
+						ExpiredAt: request["expiredAt"].(*time.Time),
+						Hits:      0,
 					}
+					mlm.mapLinks[sid] = link
+					mlm.mapIndexUrls[url] = sid
 				}
+				link = mlm.mapLinks[sid]
+				resCh <- response{value: &addedResult{id: link.Id, added: !ok}}
+			case op == "getLink":
+				sid := strconv.Itoa(request["id"].(int))
+				resCh := request["rc"].(chan response)
+				if link, ok := mlm.mapLinks[sid]; ok {
+					resCh <- response{value: link}
+				} else {
+					resCh <- response{err: ErrNotFound}
+				}
+			case op == "hitLink":
+				sid := strconv.Itoa(request["id"].(int))
+				resCh := request["rc"].(chan response)
+				if link, ok := mlm.mapLinks[sid]; ok {
+					link.Hits++
+					resCh <- response{value: link}
+				} else {
+					resCh <- response{err: ErrNotFound}
+				}
+			case op == "setLinkDeleted":
+				sid := strconv.Itoa(request["id"].(int))
+				resCh := request["rc"].(chan response)
+				if link, ok := mlm.mapLinks[sid]; ok {
+					dt := time.Now().UTC()
+					link.DeletedAt = &dt
+					resCh <- response{value: link}
+				} else {
+					resCh <- response{err: ErrNotFound}
+				}
+			case op == "removeLink":
+				sid := strconv.Itoa(request["id"].(int))
+				resCh := request["rc"].(chan response)
+				if link, ok := mlm.mapLinks[sid]; ok {
+					delete(mlm.mapIndexUrls, link.TargetUrl)
+					delete(mlm.mapLinks, sid)
+					resCh <- response{}
+				} else {
+					resCh <- response{err: ErrNotFound}
+				}
+			default:
+				// don't panic
+				continue
 			}
 		}
 	}()
@@ -180,7 +173,7 @@ func (mlm *mapLinkManager) addLink(url string, expiredAt *time.Time) (int, bool,
 	request["rc"] = resCh
 	mlm.chOps <- request
 	res := <-resCh
-	if res.err	!= nil{
+	if res.err != nil {
 		return -1, false, res.err
 	}
 	rest, ok := res.value.(*addedResult)
@@ -204,7 +197,7 @@ func (mlm *mapLinkManager) getLink(id int) (*Link, error) {
 	request["rc"] = resCh
 	mlm.chOps <- request
 	res := <-resCh
-	if res.err != nil{
+	if res.err != nil {
 		return nil, res.err
 	}
 	return res.value.(*Link), res.err
@@ -240,7 +233,7 @@ func (mlm *mapLinkManager) hitLink(id int) (*Link, error) {
 	request["rc"] = resCh
 	mlm.chOps <- request
 	res := <-resCh
-	if res.err != nil{
+	if res.err != nil {
 		return nil, res.err
 	}
 	return res.value.(*Link), res.err
@@ -278,21 +271,21 @@ func (mlm *mapLinkManager) removeLink(id int) error {
 	return (<-resCh).err
 }
 
-func (mlm *mapLinkManager) Done() <-chan struct{}{
+func (mlm *mapLinkManager) Done() <-chan struct{} {
 	return mlm.completed
 }
 
-func (mlm *mapLinkManager) Err() error{
+func (mlm *mapLinkManager) Err() error {
 	return mlm.err
 }
 
-func (mlm *mapLinkManager) save(){
+func (mlm *mapLinkManager) save() {
 	mlm.wg.Wait()
-	if mlm.path != ""{
-		if file, err := os.OpenFile(mlm.path, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0644); err != nil{
+	if mlm.path != "" {
+		if file, err := os.OpenFile(mlm.path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644); err != nil {
 			mlm.err = err
 		} else {
-			if err := json.NewEncoder(file).Encode(mlm.mapLinks); err != nil{
+			if err := json.NewEncoder(file).Encode(mlm.mapLinks); err != nil {
 				mlm.err = err
 			}
 		}

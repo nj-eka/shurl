@@ -5,10 +5,10 @@ import (
 )
 
 type Link struct {
-	Id        int `json:"id"`
-	TargetUrl string `json:"url"`
-	CreatedAt time.Time `json:"ct"`
+	Id        int        `json:"id"`
+	TargetUrl string     `json:"url"`
+	CreatedAt time.Time  `json:"ct"`
 	DeletedAt *time.Time `json:"dt"`
 	ExpiredAt *time.Time `json:"et"`
-	Hits      int 	`json:"hs"`
+	Hits      int        `json:"hs"`
 }
