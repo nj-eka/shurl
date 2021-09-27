@@ -13,6 +13,7 @@ import (
 	"github.com/nj-eka/shurl/internal/errs"
 	"github.com/nj-eka/shurl/internal/logging"
 	"github.com/nj-eka/shurl/store/bolt_store"
+	"github.com/nj-eka/shurl/store/mem_store"
 	"github.com/nj-eka/shurl/utils/fsutils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -147,13 +148,25 @@ func init() {
 		log.Exit(1)
 	}
 	var store app.LinkStore
-	if appCfg.Store != nil && appCfg.Store.Bolt != nil {
-		if appCfg.Store.Bolt.FilePath, err = fsutils.SafeParentResolvePath(appCfg.Store.Bolt.FilePath, usr, 0700); err == nil {
-			store, err = bolt_store.NewBoltLinkStore(ctx, *appCfg.Store.Bolt)
-		}
-		if err != nil {
-			logging.LogError(ctx, errs.KindStore, fmt.Errorf("init bolt store failed: %w", err))
-			log.Exit(1)
+	if appCfg.Store != nil { // todo: add store loader
+		if appCfg.Store.Bolt != nil {
+			if appCfg.Store.Bolt.FilePath, err = fsutils.SafeParentResolvePath(appCfg.Store.Bolt.FilePath, usr, 0700); err == nil {
+				store, err = bolt_store.NewBoltLinkStore(ctx, *appCfg.Store.Bolt)
+			} else {
+				logging.LogError(ctx, errs.KindStore, fmt.Errorf("init bolt store failed: %w", err))
+				log.Exit(1)
+			}
+		} else if appCfg.Store.Mem != nil {
+			if appCfg.Store.Mem.FilePath != ""{
+				if appCfg.Store.Mem.FilePath, err = fsutils.SafeParentResolvePath(appCfg.Store.Mem.FilePath, usr, 0700); err != nil {
+					logging.LogError(ctx, errs.KindStore, fmt.Errorf("init mem store failed: %w", err))
+					log.Exit(1)
+				}
+			}
+			if store, err = mem_store.NewMemStore(ctx, *appCfg.Store.Mem); err != nil{
+				logging.LogError(ctx, errs.KindStore, fmt.Errorf("init mem store failed: %w", err))
+				log.Exit(1)
+			}
 		}
 	} else {
 		logging.LogError(ctx, errs.KindStore, "no store config")
