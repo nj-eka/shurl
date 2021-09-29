@@ -46,11 +46,16 @@ type RouterConfig struct {
 //    timeout: 1s
 type StoreConfig struct {
 	Bolt *BoltStoreConfig `mapstructure:"bolt"`
+	Mem  *MemStoreConfig  `mapstructure:"mem"`
 }
 
 type BoltStoreConfig struct {
 	FilePath string        `mapstructure:"path"`
 	Timeout  time.Duration `mapstructure:"timeout"`
+}
+
+type MemStoreConfig struct {
+	FilePath string `mapstructure:"path"`
 }
 
 // tokenizer:
