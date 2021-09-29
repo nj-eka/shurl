@@ -31,8 +31,7 @@ URL Shortener - Goland full stack web application in the form of a web service w
     $ git clone https://github.com/nj-eka/shurl.git
     $ cd shurl
 ### run locally
-    $ make test
-    $ make build
+    $ make run
 
 ### run in docker container
     $ docker build -f Dockerfile -t shurl_image .
